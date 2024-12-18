@@ -3,11 +3,19 @@ from torch import nn
 import torch.nn.functional as F
 from transformers import AutoProcessor, AutoModel
 from PIL import Image
+from peft import LoraConfig, get_peft_model
 
-class SiglipClassify(nn.Module):
+class SiglipLoRAClassify(nn.Module):
     def __init__(self, path):
         super().__init__()
         self.model = AutoModel.from_pretrained(path).vision_model
+        self.lora_config = LoraConfig(
+            r=64,
+            lora_alpha=128,
+            target_modules=["q_proj", "k_proj", "v_proj"],
+            lora_dropout=0.05,
+        )
+        self.model = get_peft_model(self.model, self.lora_config)
         self.classifier = nn.Sequential(
             nn.Linear(in_features=self.model.config.hidden_size, out_features=1000, bias=True),
             nn.GELU(),

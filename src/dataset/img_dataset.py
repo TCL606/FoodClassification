@@ -2,6 +2,18 @@ from torch.utils.data import Dataset
 from PIL import Image
 import os
 import torch
+# import torchvision.transforms as transforms
+
+# data_transforms = transforms.Compose([
+#     transforms.RandomHorizontalFlip(p=0.5),  # 以50%的概率进行水平翻转
+#     transforms.RandomRotation(degrees=(-30, 30)),  # 在-30到30度之间随机旋转
+#     transforms.ColorJitter(                  
+#         brightness=0.2,
+#         contrast=0.2,     # 随机调整对比度
+#         saturation=0.2,   # 随机调整饱和度
+#         hue=0.1           # 随机调整色调
+#     ),
+# ])
 
 class ImgDataset(Dataset):
     def __init__(self, data_path, data_root, processor, test=False, use_subfig=False):
@@ -12,16 +24,37 @@ class ImgDataset(Dataset):
         self.test = test
         self.use_subfig = use_subfig
         if self.test:
-            with open(data_path, 'r') as fp:
-                for line in fp:
-                    line = line.strip()
-                    self.data.append(line)
+            if "test_qtcom.txt" in data_path:
+                with open(data_path, 'r') as fp:
+                    for line in fp:
+                        line = line.strip()
+                        self.data.append(os.path.join(self.data_root, line))
+            else:
+                with open(data_path, 'r') as fp:
+                    for line in fp:
+                        line = line.strip()
+                        line = line.split()
+                        self.data.append(os.path.join(self.data_root, line[0]))
         else:
             with open(data_path, 'r') as fp:
                 for line in fp:
                     line = line.strip()
                     line = line.split()
-                    self.data.append((line[0], int(line[1])))
+                    self.data.append((os.path.join(self.data_root, line[0]), int(line[1])))
+
+            # import json
+            # # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/src/output/val/siglip_lora_lr1e-4_bs16_8gpu_20epo_4k/test/results_final.json
+            # with open("/mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/src/output/test/siglip_lora_lr1e-4_bs16_8gpu_20epo_4k/test/results_final.json", "r") as fp:
+            # # with open("/mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/src/output/val/siglip_lora_lr1e-4_bs16_8gpu_20epo_4k/test/results_final.json", "r") as fp:
+            #     data_f = json.load(fp)
+            # for it in data_f:
+            #     self.data.append((it[2], it[0]))
+
+            # with open("/mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/data/val_qtcom.txt", 'r') as fp:
+            #     for line in fp:
+            #         line = line.strip()
+            #         line = line.split()
+            #         self.data.append((os.path.join("/mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/data/val", line[0]), int(line[1])))
 
     def __len__(self):
         return len(self.data)
@@ -29,14 +62,15 @@ class ImgDataset(Dataset):
     def __getitem__(self, index):
         if self.test:
             img_path = self.data[index]
-            img_path = os.path.join(self.data_root, img_path)
+            # img_path = os.path.join(self.data_root, img_path)
             img = Image.open(img_path)
             inputs = self.processor(img, return_tensors="pt")
             data_dict = dict()
         else:
             img_path, label = self.data[index]
-            img_path = os.path.join(self.data_root, img_path)
+            # img_path = os.path.join(self.data_root, img_path)
             img = Image.open(img_path)
+            # img = data_transforms(img)
             inputs = self.processor(img, return_tensors="pt")
             data_dict = dict()
             data_dict["label"] = label
