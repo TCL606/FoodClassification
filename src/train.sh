@@ -11,20 +11,21 @@ export WANDB_PROJECT=TCL_DataHw
 
     # --lr_scheduler_type "cosine" \
 
-output_dir=output/debug # siglip_lr1e-4_bs16_8gpu_40epo_28k # debug # siglip_lr1e-4_bs16_8gpu_20epo_ctn15620 # debug # 
-resnet_model=/mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/siglip-so400m-patch14-384 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/clip-vit-large-patch14 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/resnet-152 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/resnet-50 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/resnet-34 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/resnet-50
+export CUDA_VISIBLE_DEVICES=0
+output_dir=output/siglip_lora_lr1e-4_bs16_1gpu_20epo # val/siglip_lr1e-4_bs16_8gpu_40epo_28k # debug # siglip_lr1e-4_bs16_8gpu_20epo_ctn15620 # debug # output/debug # 
+resnet_model=/mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/siglip-so400m-patch14-384 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/resnet-50 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/siglip-so400m-14-980-flash-attn2-navit # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/clip-vit-large-patch14 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/resnet-152 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/resnet-34 # /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/models/resnet-50
 
-torchrun --nproc_per_node=8 --nnodes="${ARNOLD_WORKER_NUM}" --node_rank="${ARNOLD_ID}" --master_addr="${METIS_WORKER_0_HOST}" --master_port=42586 \
+torchrun --nproc_per_node=1 --nnodes="${ARNOLD_WORKER_NUM}" --node_rank="${ARNOLD_ID}" --master_addr="${METIS_WORKER_0_HOST}" --master_port=22286 \
     train.py \
     --learning_rate 1e-4 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
-    --num_train_epochs 40 \
+    --num_train_epochs 20 \
     --output_dir $output_dir \
     --eval_steps 4000 \
     --save_steps 4000 \
     --resnet_model $resnet_model \
-    --model_type siglip_subfig \
+    --model_type siglip_lora \
     --freeze_vm True \
     --train_txt /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/data/train_qtcom.txt \
     --train_data_root /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/data/Train_qtc \
@@ -32,6 +33,6 @@ torchrun --nproc_per_node=8 --nnodes="${ARNOLD_WORKER_NUM}" --node_rank="${ARNOL
     --eval_data_root /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/data/val \
     --test_txt /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/data/test_qtcom.txt \
     --test_data_root /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/data/test_new \
-    --do_test False \
-    --do_eval True \
-    --ckpt /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/src/output/siglipSubfig_lr1e-4_bs16_8gpu_40epo/checkpoint-16000
+    --do_eval True
+
+    # --do_test True --ckpt /mnt/bn/tiktok-mm-4/aiic/users/tangchangli/test/meituan_hw/src/output/siglip_lora_augm_lr1e-4_bs16_8gpu_20epo_useFakeTest/checkpoint-6000
