@@ -166,3 +166,4 @@ src/output
 src/wandb
 src/final_model
 models/
+scripts/gpt*
